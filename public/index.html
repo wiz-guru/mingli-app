@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>紫微 · 命理解读</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="header-eyebrow">紫微三合 × 中州派 × 手相互证</div>
+    <div class="header-title">紫微斗数</div>
+    <div class="header-sub">输入生辰 · 精确排盘 · AI 命理解读</div>
+  </div>
+
+  <div class="card">
+    <form id="form">
+      <div class="full">
+        <label>历法</label>
+        <div class="seg" id="calseg">
+          <button type="button" data-cal="solar" class="on">公历</button>
+          <button type="button" data-cal="lunar">农历</button>
+        </div>
+      </div>
+      <div>
+        <label>出生日期</label>
+        <input type="date" id="date" value="2000-01-01" required>
+      </div>
+      <div>
+        <label>时辰</label>
+        <select id="hour"></select>
+      </div>
+      <div>
+        <label>性别</label>
+        <div class="seg" id="genderseg">
+          <button type="button" data-g="女" class="on">女</button>
+          <button type="button" data-g="男">男</button>
+        </div>
+      </div>
+      <div id="leapwrap" class="hidden">
+        <label>闰月</label>
+        <div class="seg" id="leapseg">
+          <button type="button" data-leap="0" class="on">否</button>
+          <button type="button" data-leap="1">是</button>
+        </div>
+      </div>
+      <div class="upload full">
+        <label>手相照片（可选，提供则加入手相互证）</label>
+        <div class="seg" id="handseg" style="margin-bottom:8px">
+          <button type="button" data-hand="left">左手</button>
+          <button type="button" data-hand="right" class="on">右手</button>
+        </div>
+        <div class="drop" id="drop">点击上传手掌照片</div>
+        <input type="file" id="palm" accept="image/*">
+        <div style="color:var(--ivory-dim);font-size:11px;margin-top:6px;line-height:1.7;opacity:.8">
+          传统「男左女右」：男看左手、女看右手为主；左手主先天、右手主后天，想更准可两只都试。<br>掌心朝镜头、光线充足、五指自然张开。
+        </div>
+      </div>
+      <button class="go" type="submit" id="go">排 盘</button>
+      <div class="hint">命盘排盘在本地秒出 · AI 解读需配置 API key</div>
+    </form>
+  </div>
+
+  <div id="chartView" class="hidden">
+    <div class="info-bar" id="infobar"></div>
+    <div class="section-title">十二宫位分布</div>
+    <div class="palace-grid" id="grid"></div>
+  </div>
+
+  <div id="readView" class="hidden">
+    <div class="section-title">命盘解读</div>
+    <div id="readBody"></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-quote">命盘显示可能性<br>行动决定现实</div>
+    <div class="footer-note">象由心生 · 算命是对话，不是表演 · 不预言、不替代决策</div>
+    <button class="tip-btn" id="tipBtn">☕ 请我喝杯奶茶</button>
+  </div>
+
+</div>
+
+<div id="tipModal" class="tip-overlay hidden">
+  <div class="tip-box">
+    <button class="tip-close" id="tipClose" aria-label="关闭">×</button>
+    <div class="tip-title">请我喝杯奶茶 ☕</div>
+    <div class="tip-sub">这个小工具是用爱发电做的～<br>觉得好玩，随心打赏（¥6.6 / ¥9.9 / 随意都行）就很开心啦 🙏</div>
+    <div class="tip-qr">
+      <img id="tipImg" src="wechat-qr.jpg" alt="微信收款码"
+           onerror="this.style.display='none';var m=document.getElementById('tipMissing');if(m)m.style.display='block'">
+      <div id="tipMissing" class="tip-missing" style="display:none">
+        还没放收款码图片<br><span>把微信收款码命名为 wechat-qr.jpg，放到 public 文件夹里</span>
+      </div>
+    </div>
+    <div class="tip-hint">电脑端：用手机微信扫码<br>手机端：长按二维码「识别」，或截图后用微信扫一扫相册</div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
