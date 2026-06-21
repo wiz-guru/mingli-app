@@ -17,12 +17,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'api'))
 import _mingli_core as mingli_core
 
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'public')
+STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 PORT = int(os.environ.get('PORT', '8000'))
 
 CONTENT_TYPES = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
                  '.js': 'application/javascript; charset=utf-8', '.svg': 'image/svg+xml',
-                 '.ico': 'image/x-icon', '.png': 'image/png'}
+                 '.ico': 'image/x-icon', '.png': 'image/png',
+                 '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg'}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -46,9 +47,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/':
             path = '/index.html'
         fp = os.path.normpath(os.path.join(STATIC_DIR, path.lstrip('/')))
-        if not fp.startswith(STATIC_DIR) or not os.path.isfile(fp):
-            return self._send(404, {'error': 'not found'})
         ext = os.path.splitext(fp)[1]
+        if not fp.startswith(STATIC_DIR) or not os.path.isfile(fp) or ext not in CONTENT_TYPES:
+            return self._send(404, {'error': 'not found'})
         with open(fp, 'rb') as f:
             self._send(200, f.read(), CONTENT_TYPES.get(ext, 'application/octet-stream'))
 
