@@ -6,7 +6,7 @@ import json
 from http.server import BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import mingli_core
+import _mingli_core as mingli_core
 
 
 class handler(BaseHTTPRequestHandler):

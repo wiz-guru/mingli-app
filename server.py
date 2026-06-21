@@ -15,7 +15,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'api'))
-import mingli_core
+import _mingli_core as mingli_core
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'public')
 PORT = int(os.environ.get('PORT', '8000'))
