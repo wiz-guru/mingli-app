@@ -2,8 +2,8 @@
 """紫微斗数 App —— 单一 Flask 入口（Vercel 的 Python 运行时识别 app.py 里的 `app`）。
 
 路由：
-  GET  /                          -> public/index.html
-  GET  /<file>                    -> public/<file>（styles.css / app.js / wechat-qr.jpg）
+  GET  /                          -> web/index.html
+  GET  /<file>                    -> web/<file>（styles.css / app.js / wechat-qr.jpg）
   POST /api/chart                 -> 排盘（不需要 API key）
   POST /api/reading               -> Claude 解读（需要 ANTHROPIC_API_KEY）
 """
@@ -13,8 +13,22 @@ from flask import Flask, request, jsonify, send_from_directory
 
 import _mingli_core
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-PUBLIC = os.path.join(HERE, 'public')
+
+def _find_web_dir():
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, 'web'),
+        os.path.join(os.getcwd(), 'web'),
+        here,
+        os.getcwd(),
+    ]
+    for c in candidates:
+        if os.path.isfile(os.path.join(c, 'index.html')):
+            return c
+    return candidates[0]
+
+
+WEB = _find_web_dir()
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -49,9 +63,18 @@ def api_reading():
 
 @app.get('/')
 def index():
-    return send_from_directory(PUBLIC, 'index.html')
+    fp = os.path.join(WEB, 'index.html')
+    if not os.path.isfile(fp):
+        here = os.path.dirname(os.path.abspath(__file__))
+        return jsonify({
+            'error': 'index.html not found — 静态文件没被打包进函数',
+            'WEB': WEB, 'file': __file__, 'cwd': os.getcwd(),
+            'ls_here': sorted(os.listdir(here)) if os.path.isdir(here) else 'n/a',
+            'ls_cwd': sorted(os.listdir(os.getcwd())),
+        }), 500
+    return send_from_directory(WEB, 'index.html')
 
 
 @app.get('/<path:filename>')
 def static_files(filename):
-    return send_from_directory(PUBLIC, filename)
+    return send_from_directory(WEB, filename)
