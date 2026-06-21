@@ -1,6 +1,0 @@
-{
-  "functions": {
-    "api/chart.py": { "maxDuration": 60, "includeFiles": "api/_mingli_core.py" },
-    "api/reading.py": { "maxDuration": 60, "includeFiles": "api/_mingli_core.py" }
-  }
-}
