@@ -44,13 +44,24 @@ $("calseg").addEventListener("click", function(e){
 $("drop").addEventListener("click", function(){ $("palm").click(); });
 $("palm").addEventListener("change", function(){
   var f = this.files[0]; if(!f) return;
-  var r = new FileReader();
-  r.onload = function(){
-    var d = r.result; state.palm = d.split(",")[1];
-    state.palmType = (d.match(/data:(.*?);/)||[])[1] || "image/jpeg";
-    var drop = $("drop"); drop.classList.add("has"); drop.textContent = "已选择：" + f.name;
+  var drop = $("drop");
+  drop.textContent = "处理图片中…";
+  var url = URL.createObjectURL(f);
+  var img = new Image();
+  img.onload = function(){
+    URL.revokeObjectURL(url);
+    // 压缩到长边 ≤1280、JPEG 0.82，避免超过 Vercel 4.5MB 请求上限
+    var max = 1280, scale = Math.min(1, max / Math.max(img.width, img.height));
+    var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    var cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+    cv.getContext("2d").drawImage(img, 0, 0, w, h);
+    var dataUrl = cv.toDataURL("image/jpeg", 0.82);
+    state.palm = dataUrl.split(",")[1];
+    state.palmType = "image/jpeg";
+    drop.classList.add("has"); drop.textContent = "已选择：" + f.name;
   };
-  r.readAsDataURL(f);
+  img.onerror = function(){ URL.revokeObjectURL(url); drop.textContent = "图片读取失败，换一张试试"; };
+  img.src = url;
 });
 
 // ---- submit ----
@@ -72,7 +83,13 @@ $("form").addEventListener("submit", function(e){
 
 function post(url, body){
   return fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)})
-    .then(function(r){ return r.json().then(function(j){
+    .then(function(r){ return r.text().then(function(t){
+      var j;
+      try { j = JSON.parse(t); }
+      catch(e){
+        if(r.status === 413) throw new Error("图片太大了，换一张更小的手相照片再试");
+        throw new Error("服务器返回异常（" + r.status + "），请稍后重试");
+      }
       if(!r.ok) throw new Error(j.error || ("HTTP " + r.status));
       return j;
     });});

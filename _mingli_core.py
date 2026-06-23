@@ -6,6 +6,7 @@
 """
 import json
 import os
+import re
 import urllib.request
 import urllib.error
 
@@ -182,7 +183,7 @@ def call_anthropic(chart, palm_image_b64=None, palm_media_type='image/jpeg',
 
     body = {
         'model': model,
-        'max_tokens': 4096,
+        'max_tokens': 8192,
         'system': SYSTEM_PROMPT % _today_year(),
         'messages': [{'role': 'user', 'content': build_user_content(
             chart, palm_image_b64, palm_media_type, hand, calibration)}],
@@ -213,4 +214,5 @@ def _extract_json(text):
     start, end = text.find('{'), text.rfind('}')
     if start >= 0 and end > start:
         text = text[start:end + 1]
+    text = re.sub(r',(\s*[}\]])', r'\1', text)  # 容忍模型偶发的尾逗号
     return json.loads(text)
