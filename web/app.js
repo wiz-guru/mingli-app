@@ -176,15 +176,24 @@ function renderChart(chart, dateStr){
 }
 
 // ---- reading ----
+function clientId(){
+  var k = "zw_cid", v = null;
+  try {
+    v = localStorage.getItem(k);
+    if(!v){ v = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem(k, v); }
+  } catch(e){}
+  return v;
+}
+
 function requestReading(chart, calibration){
   var rv = $("readView"), rb = $("readBody");
   rv.classList.remove("hidden");
   rb.innerHTML = '<div class="loading"><span class="spin"></span>' +
-    (calibration ? 'AI 正在根据你的回答重新解读…' : 'AI 正在解读命盘，约需 20-40 秒…') + '</div>';
+    (calibration ? 'AI 正在根据你的回答重新解读，约 1 分钟…' : 'AI 正在解读命盘，约需 1 分钟，请耐心等…') + '</div>';
   rv.scrollIntoView({behavior:"smooth", block:"start"});
   post("/api/reading", {chart:chart, palm_image:state.palm, palm_media_type:state.palmType,
-                        hand:state.hand, calibration:calibration})
-    .then(function(r){ renderReading(r, !!calibration); })
+                        hand:state.hand, calibration:calibration, client_id:clientId()})
+    .then(function(r){ state.readingId = r._id || null; renderReading(r, !!calibration); })
     .catch(function(err){
       rb.innerHTML = '<div class="err">解读失败：'+esc(err.message)+'<br><br>' +
         '（命盘已排好。AI 解读需要在服务器设置 ANTHROPIC_API_KEY 后重试。）</div>';
@@ -210,6 +219,7 @@ function renderReading(r, calibrated){
               '<div class="prob-track"><div class="prob-fill" style="width:'+p.pct+'%"></div></div>' +
               '<span class="prob-pct">'+p.pct+'%</span></div>';
     });
+    if(state.readingId) html += '<div class="flag-row"><span class="flag-btn" data-card="'+esc(card.title)+'">🚩 这里不准</span></div>';
     html += '</div>';
   });
   html += '</div>';
@@ -242,6 +252,16 @@ function renderReading(r, calibrated){
     html += '</div><button id="calibrateBtn" class="go" style="margin-top:20px">根据我的回答 · 重新解读</button></div>';
   }
   rb.innerHTML = html;
+
+  document.querySelectorAll(".flag-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      var note = prompt("这段哪里不准？写一句帮我改进（可写预期/实际）：");
+      if(note === null || !note.trim()) return;
+      b.textContent = "已记录，谢谢 🙏"; b.classList.add("done");
+      post("/api/feedback", {client_id: clientId(), reading_id: state.readingId,
+                             card_title: b.dataset.card, note: note.trim()}).catch(function(){});
+    });
+  });
 
   var btn = $("calibrateBtn");
   if(btn) btn.addEventListener("click", function(){

@@ -12,6 +12,7 @@ import os
 from flask import Flask, request, jsonify, send_from_directory
 
 import _mingli_core
+import _db
 
 
 def _find_web_dir():
@@ -56,7 +57,28 @@ def api_reading():
             d['chart'], d.get('palm_image'), d.get('palm_media_type', 'image/jpeg'),
             hand=d.get('hand'), calibration=d.get('calibration'),
         )
+        try:
+            rid = _db.log_reading(
+                d.get('client_id'), d.get('chart'), reading,
+                os.environ.get('ANTHROPIC_MODEL', 'claude-opus-4-8'),
+                bool(d.get('palm_image')), bool(d.get('calibration')),
+            )
+            if rid:
+                reading['_id'] = rid
+        except Exception:  # noqa — 记录失败不影响返回解读
+            pass
         return jsonify(reading)
+    except Exception as e:  # noqa
+        return jsonify({'error': str(e)}), 500
+
+
+@app.post('/api/feedback')
+def api_feedback():
+    try:
+        d = request.get_json(force=True) or {}
+        _db.log_feedback(d.get('client_id'), d.get('reading_id'),
+                         d.get('card_title'), d.get('note'))
+        return jsonify({'ok': True})
     except Exception as e:  # noqa
         return jsonify({'error': str(e)}), 500
 

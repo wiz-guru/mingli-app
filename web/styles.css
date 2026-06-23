@@ -130,6 +130,11 @@ input:focus,select:focus{outline:none;border-color:var(--gold)}
 .cal-input:focus{outline:none;border-color:var(--gold)}
 
 .calibrated-note{text-align:center;color:#7CCC60;font-size:13px;margin-bottom:16px;letter-spacing:1px}
+.flag-row{margin-top:14px;text-align:right}
+.flag-btn{font-size:11px;color:var(--ivory-dim);cursor:pointer;border:1px solid rgba(200,169,110,0.18);
+  border-radius:14px;padding:3px 11px;opacity:.65;transition:.2s;display:inline-block}
+.flag-btn:hover{color:var(--warn);border-color:var(--warn);opacity:1}
+.flag-btn.done{color:#7CCC60;border-color:#7CCC60;cursor:default;opacity:1}
 .loading{text-align:center;color:var(--ivory-dim);padding:30px;font-size:14px;letter-spacing:1px}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(200,169,110,0.2);border-top-color:var(--gold);
   border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-right:8px}
